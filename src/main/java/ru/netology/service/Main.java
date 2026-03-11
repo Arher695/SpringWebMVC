@@ -31,3 +31,12 @@ public class Main {
         tomcat.getServer().await();
     }
 }
+//Создаётся встроенный Tomcat.
+//Устанавливается порт 8080.
+//Добавляется веб-контекст (корневой путь /).
+//Создаётся Spring-контекст (AnnotationConfigWebApplicationContext).
+//В контекст регистрируется конфигурация WebConfig.class.
+//Контекст инициализируется (refresh()).
+//Создаётся DispatcherServlet — главный сервлет Spring MVC.
+//Сервлет регистрируется в Tomcat под именем "dispatcher" и привязывается к пути /.
+//Tomcat стартует и ожидает запросы.

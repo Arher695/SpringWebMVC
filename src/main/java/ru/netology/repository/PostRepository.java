@@ -8,22 +8,25 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Repository
 public class PostRepository {
     private final Map<Long, Post> posts = new ConcurrentHashMap<>();
     private final AtomicLong lastId = new AtomicLong(0);
 
-    public PostRepository() {
-        // Можно добавить тестовые данные при необходимости
-    }
 
     public Map<Long, Post> all() {
-        return Map.copyOf(posts); // неизменяемая копия для потокобезопасности
+        return posts.entrySet().stream()
+                .filter(entry -> !entry.getValue().isRemoved())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue));
     }
 
     public Optional<Post> getById(long id) {
-        return Optional.ofNullable(posts.get(id));
+        return Optional.ofNullable(posts.get(id))
+                .filter(post -> !post.isRemoved());
     }
 
     public Post save(Post post) {
@@ -35,8 +38,9 @@ public class PostRepository {
             return newPost;
         } else {
             // Обновление существующего
-            if (!posts.containsKey(post.getId())) {
-                throw new NotFoundException("Post with id " + post.getId() + " not found");
+            Post existing = posts.get(post.getId());
+            if (existing == null || existing.isRemoved()) {
+                throw new NotFoundException("Post with id " + post.getId() + " does not exist or was removed");
             }
             posts.put(post.getId(), post);
             return post;
@@ -44,9 +48,22 @@ public class PostRepository {
     }
 
     public void removeById(long id) {
-        if (!posts.containsKey(id)) {
+        Post post = posts.get(id);
+        if (post == null) {
             throw new NotFoundException("Post with id " + id + " not found");
         }
-        posts.remove(id);
+        post.setRemoved(true); // помечаем как удалённый
     }
+
+    /*//восстанавливать посты
+    public void restoreById(long id) {
+        Post post = posts.get(id);
+        if (post == null) throw new NotFoundException("...");
+        post.setRemoved(false);
+    }*/
 }
+//Хранит посты в памяти (ConcurrentHashMap — потокобезопасно).
+//Генерирует ID (AtomicLong).
+//Реализует мягкое удаление: removed = true, но объект остаётся в Map.
+//
+//Нет @Repository — но работает, так как @ComponentScan видит его через PostService.

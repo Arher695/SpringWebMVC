@@ -1,5 +1,6 @@
 package ru.netology.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.netology.model.Post;
 import ru.netology.service.PostService;
@@ -31,16 +32,20 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeById(@PathVariable long id) {
         service.removeById(id);
 
-    /*@DeleteMapping("/{id}")
-    public void removeById(long id) {
-        service.removeById(id);*/
-
-    /*@DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeById(@PathVariable long id) {
-        service.removeById(id);*/
     }
+    //Принимает HTTP-запросы.
+    //@RestController = @Controller + @ResponseBody → автоматически сериализует ответ в JSON.
+    //@RequestMapping("/api/posts") — базовый путь для всех методов.
+    //Каждый метод:
+    //
+    //GET /api/posts → возвращает список постов.
+    //GET /api/posts/{id} → возвращает один пост.
+    //POST /api/posts → создаёт или обновляет.
+    //DELETE /api/posts/{id} → помечает как удалённый.
+    //
+    //Все данные автоматически конвертируются в/из JSON.
 }
